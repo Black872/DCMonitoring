@@ -1,0 +1,50 @@
+networks:
+  monitor:
+    driver: bridge
+
+services:
+  db:
+    build:
+      context: mysql
+      dockerfile: Dockerfile
+    container_name: mysql-8.3.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    environment:
+      - MYSQL_DATABASE=zabbix
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+      - MYSQL_DATA_DIR=/var/lib/mysql
+      - MYSQL_RUN_DIR=/run/mysqld
+      - MYSQL_LOG_DIR=/var/log/mysql
+    
+    ports:
+      - "3306"
+    
+    networks:
+      - monitor
+
+  
+  zabbix_server:
+    build:
+      context: zabbix
+      dockerfile: ./dockerfile/Dockerfile
+    container_name: zabbix-ubuntu-5.0
+    environment:
+      - DB_SERVER_HOST=db:3306
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+
+    networks:
+      - monitor
+
+    depends_on:
+      - db
+
+  # zabbix_agent:
+  #   build:
+  #     context: contextPath
+  #     dockerfile: Dockerfile
+
+  
