@@ -1,61 +1,50 @@
-networks:
-  monitor:
-    driver: bridge
+version: '3.7'
 
 services:
-  db:
-    build:
-      context: /home/dark/docker/Dockerfile/mysql
-      dockerfile: Dockerfile
-    container_name: mysql-8.3.0
-    command: --default-authentication-plugin=mysql_native_password
-    restart: unless-stopped
+  mysql:
+    image: mysql:8.3.0
+    restart: always
     environment:
-      - MYSQL_DATABASE=zabbix
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_USER=zabbix
-      - MYSQL_PASSWORD=zabbix
-      - MYSQL_DATA_DIR=/var/lib/mysql
-      - MYSQL_RUN_DIR=/run/mysqld
-      - MYSQL_LOG_DIR=/var/log/mysql
-    
-    ports:
-      - "3306:3306"
-    
-    networks:
-      - monitor
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: password
+    volumes:
+      - mysql-data:/var/lib/mysql
 
-  
-  zabbix_server:
-    build:
-      context: /home/dark/docker/Dockerfile/zabbix
-      dockerfile: Dockerfile
-    container_name: zabbix-ubuntu-5.0
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:latest
+    restart: always
     environment:
-      - DB_SERVER_HOST=db:3306
-      - MYSQL_USER=zabbix
-      - MYSQL_PASSWORD=zabbix
-    networks:
-      - monitor
+      DB_SERVER_HOST: mysql
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: password
+    depends_on:
+      - mysql
     ports:
       - "10051:10051"
-    depends_on:
-      - db
-  
-  zabbix_web_server:
-    build: 
-      context: /home/dark/docker/Dockerfile/zabbix-web
-      dockerfile: Dockerfile
-    container_name: zabbix-nginx-server
-    networks:
-      - monitor
-    ports: 
-      - "443:8443"
+
+  zabbix-web-nginx-mysql:
+    image: zabbix/zabbix-web-nginx-mysql:latest
+    restart: always
     environment:
-      - DB_SERVER_HOST=db:3306
-      - MYSQL_USER=zabbix
-      - MYSQL_PASSWORD=zabbix
-      - ZBX_SERVER_HOST=zabbix_server:10051
+      DB_SERVER_HOST: mysql
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: password
+      ZBX_SERVER_HOST: zabbix-server
+      PHP_TZ: "UTC"
     depends_on:
-      - db
-      - zabbix_server
+      - mysql
+      - zabbix-server
+    ports:
+      - "80:8080"
+    volumes:
+      - nginx-conf:/etc/nginx/conf.d
+
+volumes:
+  mysql-data:
+  nginx-conf:

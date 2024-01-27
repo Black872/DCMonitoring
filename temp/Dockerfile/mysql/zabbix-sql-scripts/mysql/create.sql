@@ -1,4 +1,5 @@
-CREATE TABLE hosts (
+USE zabbix;
+CREATE TABLE IF NOT EXISTS hosts (
     hostid      bigint  unsigned            NOT NULL,
     proxy_hostid    bigint  unsigned            DEFAULT NULL,
     host        varchar(100)           NOT NULL,

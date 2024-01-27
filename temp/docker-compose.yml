@@ -1,0 +1,64 @@
+networks:
+  monitor:
+    driver: bridge
+
+services:
+  db:
+    build:
+      context: /home/dark/docker/Dockerfile/mysql
+      dockerfile: Dockerfile
+    container_name: mysql-8.3.0
+    command: --default-authentication-plugin=mysql_native_password && sh -c "mysqld"
+    restart: unless-stopped
+    environment:
+      - MYSQL_DATABASE=zabbix
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+      - MYSQL_DATA_DIR=/var/lib/mysql
+      - MYSQL_RUN_DIR=/run/mysqld
+      - MYSQL_LOG_DIR=/var/log/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - monitor
+
+  
+  zabbix_server:
+    build:
+      context: /home/dark/docker/Dockerfile/zabbix
+      dockerfile: Dockerfile
+    container_name: zabbix-ubuntu-5.0
+    command: sh -c "
+     sleep 30 "
+    environment:
+      - DB_SERVER_HOST=db:3306
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+    networks:
+      - monitor
+    ports:
+      - "10051:10051"
+    depends_on:
+      - db
+
+  
+  zabbix_web_server:
+    build: 
+      context: /home/dark/docker/Dockerfile/zabbix-web
+      dockerfile: Dockerfile
+    container_name: zabbix-nginx-server
+    command: sh -c "
+     sleep 30 "
+    networks:
+      - monitor
+    ports: 
+      - "80:80"
+    environment:
+      - DB_SERVER_HOST=db:3306
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+      - ZBX_SERVER_HOST=zabbix_server:10051
+    depends_on:
+      - db
+      - zabbix_server
