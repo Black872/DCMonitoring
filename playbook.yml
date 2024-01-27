@@ -18,8 +18,8 @@
 
     - name: Copy docker files to remote
       copy:
-        src: /home/dark/workspace/DCMonitoring/files/*
-        dest: /home/dark/zabbix/
+        src: /home/dark/workspace/DCMonitoring/docker/*
+        dest: /home/dark/zabbix
         owner: dark
         group: docker
         mode: "0755"
