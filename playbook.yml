@@ -8,29 +8,13 @@
       apt:
         update_cache: true
 
-    - name: Create directory for docker files
-      file:
-        path: /home/dark/zabbix
-        state: directory
-        owner: dark
-        group: docker
-        mode: "0755"
-
     - name: Copy docker files to remote
       copy:
-        src: /home/dark/workspace/DCMonitoring/docker/*
-        dest: /home/dark/zabbix
+        src: /home/dark/workspace/DCMonitoring/docker
+        dest: /home/dark/
         owner: dark
         group: docker
         mode: "0755"
-
-    # - name: make directory for Zabbix
-    #   file:
-    #     path: /home/dark/zabbix
-    #     state: directory
-    #     owner: "dark"
-    #     group: "docker"
-    #     mode: "0750"
 
     # - name: Instal Zabbix server/frontend/agent
     #   get_url:
