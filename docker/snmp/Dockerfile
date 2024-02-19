@@ -1,0 +1,1 @@
+FROM zabbix/zabbix-snmptraps:6.0-ubuntu-latest

@@ -1,0 +1,4 @@
+FROM zabbix/zabbix-agent:6.0-ubuntu-latest
+
+ENV ZBX_HOSTNAME=10.119.116.133
+ENV ZBX_SERVER_HOST=10.119.117.15:10051
